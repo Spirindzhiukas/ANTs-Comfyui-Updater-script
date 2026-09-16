@@ -781,7 +781,7 @@ try {
     $flags.Add(
         [PSCustomObject]@{
             Flag      = "PAUSE-TRAP"
-            Detected  = $(Test-TextPattern $flagBat "if\s+`"%~1`"\s*==\s*`"`"\s+pause")
+            Detected  = $(Test-TextPattern $flagBat 'if\s+"%~1"\s*==\s*""\s+pause')
             Where     = "update_comfyui.bat"
             Meaning   = 'The BAT ends with `if "%~1"=="" pause`. Invoked WITHOUT any argument it waits for a key press - an external caller (e.g. the Safe Update Manager) will appear to hang until its timeout. Fix: always invoke it with a dummy argument, e.g. `update_comfyui.bat -np`.'
         }
@@ -998,7 +998,7 @@ try {
     Add-Md "| Property | Value |"
     Add-Md "|----------|-------|"
     Add-Md "| Branch | " + $branch + $(if ($isDetached) { " (**DETACHED HEAD**)" } else { "" }) + " |"
-    Add-Md "| HEAD | `" + $headCommit + "`" |"
+    Add-Md ('| HEAD | "' + $headCommit + '" |')
     Add-Md "| origin URL | " + $remoteUrl + " |"
     Add-Md "| origin/HEAD | " + $originHead + " |"
     Add-Md "| Stable remote refs found | " + $(if ($stableRefCandidates.Count -gt 0) { $stableRefCandidates -join ", " } else { "(none)" }) + " |"
@@ -1080,11 +1080,11 @@ try {
         Add-Md ""
         Add-Md "| Property | Value |"
         Add-Md "|----------|-------|"
-        Add-Md "| Full path | `" + $pr.FullPath + "`" |"
+        Add-Md ('| Full path | "' + $pr.FullPath + '" |')
         Add-Md "| Exists | " + $(if ($pr.Info.Exists) { "yes" } else { "no" }) + " |"
         Add-Md "| Filesystem type | " + $pr.Info.Type + " |"
         if ($pr.Info.Type -like "*link*" -or $pr.Info.Type -eq "junction (mount point)") {
-            Add-Md "| Link target | `" + $(if ([string]::IsNullOrWhiteSpace($pr.Info.LinkTarget)) { "?" } else { $pr.Info.LinkTarget }) + "`" |"
+            Add-Md ('| Link target | "' + $(if ([string]::IsNullOrWhiteSpace($pr.Info.LinkTarget)) { "?" } else { $pr.Info.LinkTarget }) + '" |')
             if (-not [string]::IsNullOrWhiteSpace($pr.Info.ReparseTag) -and $pr.Info.ReparseTag -ne "(fsutil not available)") {
                 Add-Md "| Reparse tag | " + $pr.Info.ReparseTag + " |"
             }
@@ -1155,8 +1155,8 @@ try {
 
     Add-Md "| Item | Value |"
     Add-Md "|------|-------|"
-    Add-Md "| Local update folder | `" + $(if ([string]::IsNullOrWhiteSpace($UpdateDir)) { "NOT FOUND" } else { $UpdateDir }) + "`" |"
-    Add-Md "| Repo-shipped updater dir | `" + $ciDir + "`" |"
+    Add-Md ('| Local update folder | "' + $(if ([string]::IsNullOrWhiteSpace($UpdateDir)) { "NOT FOUND" } else { $UpdateDir }) + '" |')
+    Add-Md ('| Repo-shipped updater dir | "' + $ciDir + '" |')
     Add-Md "| Self-update pending | " + $selfUpdatePending + " |"
     Add-Md ""
 
