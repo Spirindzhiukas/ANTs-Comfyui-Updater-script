@@ -70,6 +70,71 @@ param(
 $ErrorActionPreference = "Stop"
 $ProgressPreference    = "SilentlyContinue"
 
+# >>> SELF-INTEGRITY CHECK BEGIN (do not edit content between the BEGIN/END markers) <<<
+# This file has been mangled in transfer before (backticks are Markdown syntax
+# and some viewers/transfers eat them). The script hashes its own content -
+# excluding this block, which holds the expected hashes - and refuses to run
+# if the file on disk is not the committed version.
+$SelfIntegrityCoreHash = "BCA60D55A485E2EEA11B7D3E69877A393669E57DBCDE78AF07352677C9CBEA07"
+$selfScriptPath = $MyInvocation.MyCommand.Path
+if ($selfScriptPath -and (Test-Path -LiteralPath $selfScriptPath)) {
+    try {
+        $selfRawLines = [System.IO.File]::ReadAllLines($selfScriptPath)
+        $selfBegin = -1
+        $selfEnd   = -1
+        for ($selfI = 0; $selfI -lt $selfRawLines.Count; $selfI++) {
+            if ($selfBegin -lt 0) {
+                if ($selfRawLines[$selfI] -match "^# >>> SELF-INTEGRITY CHECK BEGIN") {
+                    $selfBegin = $selfI
+                }
+            }
+            elseif ($selfEnd -lt 0) {
+                if ($selfRawLines[$selfI] -match "^# >>> SELF-INTEGRITY CHECK END") {
+                    $selfEnd = $selfI
+                    break
+                }
+            }
+        }
+        if ($selfBegin -ge 0 -and $selfEnd -gt $selfBegin) {
+            $selfCore = New-Object System.Collections.Generic.List[string]
+            for ($selfI = 0; $selfI -lt $selfRawLines.Count; $selfI++) {
+                if ($selfI -lt $selfBegin -or $selfI -gt $selfEnd) {
+                    $selfCore.Add($selfRawLines[$selfI])
+                }
+            }
+            $selfSha   = [System.Security.Cryptography.SHA256]::Create()
+            $selfBytes = [System.Text.Encoding]::UTF8.GetBytes(($selfCore -join "`n"))
+            $selfActual =
+                ([System.BitConverter]::ToString($selfSha.ComputeHash($selfBytes)) -replace "-", "").ToUpper()
+
+            if ($selfActual -ne $SelfIntegrityCoreHash.ToUpper()) {
+                Write-Host ""
+                Write-Host "================================================================" -ForegroundColor Red
+                Write-Host " SELF-INTEGRITY CHECK FAILED" -ForegroundColor Red
+                Write-Host "================================================================" -ForegroundColor Red
+                Write-Host "The file you are running is NOT the committed version of the"
+                Write-Host "diagnostic script. It was probably mangled while being copied"
+                Write-Host "(e.g. backticks eaten by a Markdown-aware viewer or transfer)."
+                Write-Host ""
+                Write-Host "Do NOT use the report produced by this run. Re-download the"
+                Write-Host "file and run it again - this check will verify it for you:"
+                Write-Host ""
+                Write-Host "    git clone -b arena/01a0ac02-ants-comfyui-updater-script"
+                Write-Host "        https://github.com/Spirindzhiukas/ANTs-Comfyui-Updater-script.git"
+                Write-Host ""
+                Write-Host "(then copy ComfyUI_ProtectedPaths_Diagnostics.ps1 from the"
+                Write-Host "cloned folder - git guarantees the file bytes are intact)"
+                Write-Host ""
+                exit 1
+            }
+        }
+    }
+    catch {
+        Write-Warning "Self-integrity check could not run: " + $_.Exception.Message
+    }
+}
+# >>> SELF-INTEGRITY CHECK END <<<
+
 $protectedFolders = @("models", "output", "input")
 
 # ============================================================================
